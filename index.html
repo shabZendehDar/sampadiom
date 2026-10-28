@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سمپادیوم | آکادمی تیزهوشان</title>
-    <!-- لینک به فایل CSS -->
+    <!-- فونت زیبای وزیرمتن -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.3/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- لایه‌های نور پس‌زمینه (برای افکت شیشه‌ای) -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
 
-    <header>
+    <header class="glass-header">
         <h1>سمپادیوم</h1>
         <p>آکادمی دیجیتال تیزهوشان</p>
     </header>
@@ -19,23 +23,29 @@
             
             <!-- کارت ریاضی -->
             <a href="math.html" class="book-card">
-                <div class="book-icon">📐</div>
-                <h2>ریاضی نهم</h2>
-                <p>درسنامه کامل، تست‌های سطح بالا و پاسخ‌های تشریحی</p>
+                <div class="card-content">
+                    <div class="book-icon">📐</div>
+                    <h2>ریاضی نهم</h2>
+                    <p>درسنامه کامل، تست‌های سطح بالا و پاسخ‌های تشریحی</p>
+                </div>
             </a>
 
             <!-- کارت علوم -->
             <a href="science.html" class="book-card">
-                <div class="book-icon">🔬</div>
-                <h2>علوم تجربی نهم</h2>
-                <p>جزوه فراتر از کتاب، جدول تناوبی و ترکیب‌های یونی</p>
+                <div class="card-content">
+                    <div class="book-icon">🔬</div>
+                    <h2>علوم تجربی نهم</h2>
+                    <p>جزوه فراتر از کتاب، جدول تناوبی و ترکیب‌های یونی</p>
+                </div>
             </a>
 
             <!-- کارت هوش -->
             <a href="iq.html" class="book-card">
-                <div class="book-icon">🧠</div>
-                <h2>هوش و استعداد</h2>
-                <p>آزمون‌های ریون، الگوها و استدلال منطقی</p>
+                <div class="card-content">
+                    <div class="book-icon">🧠</div>
+                    <h2>هوش و استعداد</h2>
+                    <p>آزمون‌های ریون، الگوها و استدلال منطقی</p>
+                </div>
             </a>
 
         </div>
@@ -44,6 +54,5 @@
     <footer>
         طراحی شده برای سمپادیوم © ۱۴۰۵
     </footer>
-
 </body>
 </html>
