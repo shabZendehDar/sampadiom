@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Living Periodic Table</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+    radial-gradient(
+        circle at center,
+        #10102b,
+        #03030a 70%
+    );
+
+    font-family: Arial, sans-serif;
+
+    overflow: hidden;
+
+}
+
+
+/* Main Element Card */
+
+.element {
+
+    width: 320px;
+
+    height: 420px;
+
+    position: relative;
+
+    border-radius: 35px;
+
+    padding: 25px;
+
+    background:
+
+    linear-gradient(
+        145deg,
+        rgba(20, 35, 100, 0.65),
+        rgba(8, 5, 35, 0.9)
+    );
+
+    border: 1px solid rgba(100, 130, 255, 0.4);
+
+    box-shadow:
+
+    0 0 25px rgba(30, 80, 255, 0.2),
+
+    inset 0 0 25px rgba(70, 90, 255, 0.1);
+
+    backdrop-filter: blur(25px);
+
+    overflow: hidden;
+
+}
+
+
+/* Decorative Glow */
+
+.element::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+
+    height: 180px;
+
+    background: #174cff;
+
+    filter: blur(100px);
+
+    top: -70px;
+
+    left: -60px;
+
+    opacity: 0.5;
+
+    pointer-events: none;
+
+}
+
+.element::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+
+    height: 180px;
+
+    background: #ff792c;
+
+    filter: blur(100px);
+
+    bottom: -80px;
+
+    right: -50px;
+
+    opacity: 0.35;
+
+    pointer-events: none;
+
+}
+
+
+/* Atomic Number */
+
+.atomic-number {
+
+    position: absolute;
+
+    top: 25px;
+
+    left: 28px;
+
+    color: #d9e4ff;
+
+    font-size: 30px;
+
+    font-weight: 300;
+
+}
+
+
+/* Electron Configuration */
+
+.configuration {
+
+    position: absolute;
+
+    top: 35px;
+
+    right: 25px;
+
+    color: #a8b5ff;
+
+    font-size: 13px;
+
+}
+
+
+/* 3D Orb Container */
+
+.orb-container {
+
+    width: 210px;
+
+    height: 210px;
+
+    position: absolute;
+
+    top: 85px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 2;
+
+}
+
+
+/* Orb Canvas */
+
+#orb {
+
+    width: 100%;
+
+    height: 100%;
+
+}
+
+
+/* Element Symbol */
+
+.symbol {
+
+    position: absolute;
+
+    top: 145px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    font-size: 95px;
+
+    font-weight: 500;
+
+    color: white;
+
+    text-shadow:
+
+    0 0 15px #719aff,
+
+    0 0 35px #4d68ff;
+
+    z-index: 3;
+
+    pointer-events: none;
+
+}
+
+
+/* Element Name */
+
+.element-name {
+
+    position: absolute;
+
+    bottom: 75px;
+
+    width: 100%;
+
+    left: 0;
+
+    text-align: center;
+
+    color: #e7eaff;
+
+    font-size: 27px;
+
+}
+
+
+/* Category */
+
+.category {
+
+    position: absolute;
+
+    bottom: 42px;
+
+    width: 100%;
+
+    left: 0;
+
+    text-align: center;
+
+    color: #8997df;
+
+    font-size: 13px;
+
+}
+
+
+/* Atomic Mass */
+
+.mass {
+
+    position: absolute;
+
+    bottom: 18px;
+
+    left: 25px;
+
+    color: #8795e9;
+
+    font-size: 15px;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="element">
+
+    <div class="atomic-number">
+        8
+    </div>
+
+    <div class="configuration">
+        1s² 2s² 2p⁴
+    </div>
+
+
+    <div class="orb-container">
+
+        <canvas id="orb"></canvas>
+
+    </div>
+
+
+    <div class="symbol">
+        O
+    </div>
+
+
+    <div class="element-name">
+        Oxygen
+    </div>
+
+
+    <div class="category">
+        NONMETAL
+    </div>
+
+
+    <div class="mass">
+        15.999
+    </div>
+
+
+</div>
+
+
+
+<script type="module">
+
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+
+
+const canvas = document.querySelector("#orb");
+
+
+// Scene
+
+const scene = new THREE.Scene();
+
+
+// Camera
+
+const camera = new THREE.PerspectiveCamera(
+    35,
+    1,
+    0.1,
+    100
+);
+
+camera.position.z = 4;
+
+
+// Renderer
+
+const renderer = new THREE.WebGLRenderer({
+
+    canvas: canvas,
+
+    alpha: true,
+
+    antialias: true
+
+});
+
+renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, 2)
+);
+
+renderer.setSize(210, 210);
+
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+
+// Geometry
+
+const geometry = new THREE.SphereGeometry(
+    1,
+    128,
+    128
+);
+
+
+// Material
+
+const material = new THREE.MeshPhysicalMaterial({
+
+    color: 0x183dff,
+
+    metalness: 0.15,
+
+    roughness: 0.12,
+
+    transmission: 0.15,
+
+    thickness: 1.5,
+
+    clearcoat: 1,
+
+    clearcoatRoughness: 0.05
+
+});
+
+
+// Sphere
+
+const sphere = new THREE.Mesh(
+    geometry,
+    material
+);
+
+scene.add(sphere);
+
+
+// Lights
+
+const ambient = new THREE.AmbientLight(
+    0x6677ff,
+    1.5
+);
+
+scene.add(ambient);
+
+
+const blueLight = new THREE.PointLight(
+    0x1765ff,
+    35
+);
+
+blueLight.position.set(-2, 2, 3);
+
+scene.add(blueLight);
+
+
+const orangeLight = new THREE.PointLight(
+    0xff7025,
+    30
+);
+
+orangeLight.position.set(1, -2, 2);
+
+scene.add(orangeLight);
+
+
+const purpleLight = new THREE.PointLight(
+    0x8b35ff,
+    25
+);
+
+purpleLight.position.set(2, 1, -2);
+
+scene.add(purpleLight);
+
+
+// Animation
+
+const clock = new THREE.Clock();
+
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    const time = clock.getElapsedTime();
+
+    sphere.rotation.y = time * 0.15;
+
+    sphere.rotation.x =
+        Math.sin(time * 0.3) * 0.08;
+
+    blueLight.position.x =
+        -2 + Math.sin(time * 0.4) * 0.4;
+
+    orangeLight.position.x =
+        1 + Math.cos(time * 0.3) * 0.3;
+
+    renderer.render(scene, camera);
+
+}
+
+
+animate();
+
+</script>
+
+
+</body>
+
+</html>
