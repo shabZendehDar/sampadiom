@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+    
+
+<title>Living Periodic Table</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+    radial-gradient(
+        circle at center,
+        #10102b,
+        #03030a 70%
+    );
+
+    font-family: Arial, sans-serif;
+
+    overflow: hidden;
+
+}
+
+
+/* Main Element Card */
+
+.element {
+
+    width: 320px;
+
+    height: 420px;
+
+    position: relative;
+
+    border-radius: 35px;
+
+    padding: 25px;
+
+    background:
+
+    linear-gradient(
+        145deg,
+        rgba(20, 35, 100, 0.65),
+        rgba(8, 5, 35, 0.9)
+    );
+
+    border: 1px solid rgba(100, 130, 255, 0.4);
+
+    box-shadow:
+
+    0 0 25px rgba(30, 80, 255, 0.2),
+
+    inset 0 0 25px rgba(70, 90, 255, 0.1);
+
+    backdrop-filter: blur(25px);
+
+    overflow: hidden;
+
+}
+
+
+/* Decorative Glow */
+
+.element::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+
+    height: 180px;
+
+    background: #174cff;
+
+    filter: blur(100px);
+
+    top: -70px;
+
+    left: -60px;
+
+    opacity: 0.5;
+
+    pointer-events: none;
+
+}
+
+.element::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+
+    height: 180px;
+
+    background: #ff792c;
+
+    filter: blur(100px);
+
+    bottom: -80px;
+
+    right: -50px;
+
+    opacity: 0.35;
+
+    pointer-events: none;
+
+}
+
+
+/* Atomic Number */
+
+.atomic-number {
+
+    position: absolute;
+
+    top: 25px;
+
+    left: 28px;
+
+    color: #d9e4ff;
+
+    font-size: 30px;
+
+    font-weight: 300;
+
+}
+
+
+/* Electron Configuration */
+
+.configuration {
+
+    position: absolute;
+
+    top: 35px;
+
+    right: 25px;
+
+    color: #a8b5ff;
+
+    font-size: 13px;
+
+}
+
+
+/* 3D Orb Container */
+
+.orb-container {
+
+    width: 210px;
+
+    height: 210px;
+
+    position: absolute;
+
+    top: 85px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 2;
+
+}
+
+
+/* Orb Canvas */
+
+#orb {
+
+    width: 100%;
+
+    height: 100%;
+
+}
+
+
+/* Element Symbol */
+
+.symbol {
+
+    position: absolute;
+
+    top: 145px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    font-size: 95px;
+
+    font-weight: 500;
+
+    color: white;
+
+    text-shadow:
+
+    0 0 15px #719aff,
+
+    0 0 35px #4d68ff;
+
+    z-index: 3;
+
+    pointer-events: none;
+
+}
+
+
+/* Element Name */
+
+.element-name {
+
+    position: absolute;
+
+    bottom: 75px;
+
+    width: 100%;
+
+    left: 0;
+
+    text-align: center;
+
+    color: #e7eaff;
+
+    font-size: 27px;
+
+}
+
+
+/* Category */
+
+.category {
+
+    position: absolute;
+
+    bottom: 42px;
+
+    width: 100%;
+
+    left: 0;
+
+    text-align: center;
+
+    color: #8997df;
+
+    font-size: 13px;
+
+}
+
+
+/* Atomic Mass */
+
+.mass {
+
+    position: absolute;
+
+    bottom: 18px;
+
+    left: 25px;
+
+    color: #8795e9;
+
+    font-size: 15px;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="element">
+
+    <div class="atomic-number">
+        8
+    </div>
+
+    <div class="configuration">
+        1s² 2s² 2p⁴
+    </div>
+
+
+    <div class="orb-container">
+
+        <canvas id="orb"></canvas>
+
+    </div>
+
+
+    <div class="symbol">
+        O
+    </div>
+
+
+    <div class="element-name">
+        Oxygen
+    </div>
+
+
+    <div class="category">
+        NONMETAL
+    </div>
+
+
+    <div class="mass">
+        15.999
+    </div>
+
+
+</div>
+
+
+
+<script type="module">
+
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+    import { RoomEnvironment } from
+'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/environments/RoomEnvironment.js';
+
+import { PMREMGenerator } from
+'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/pmrem/PMREMGenerator.js';
+
+
+const canvas = document.querySelector("#orb");
+
+
+// Scene
+
+const scene = new THREE.Scene();
+    // ======================================
+// ENVIRONMENT REFLECTION
+// ======================================
+
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+
+const environment = new RoomEnvironment();
+
+const environmentTexture =
+    pmremGenerator.fromScene(environment).texture;
+
+scene.environment = environmentTexture;
+
+environment.dispose();
+
+pmremGenerator.dispose();
+
+
+// Camera
+
+const camera = new THREE.PerspectiveCamera(
+    35,
+    1,
+    0.1,
+    100
+);
+
+camera.position.z = 4;
+
+
+// Renderer
+
+const renderer = new THREE.WebGLRenderer({
+
+    canvas: canvas,
+
+    alpha: true,
+
+    antialias: true
+
+});
+
+renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, 2)
+);
+
+renderer.setSize(210, 210);
+
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+
+// Geometry
+
+const geometry = new THREE.SphereGeometry(
+    1,
+    128,
+    128
+);
+
+
+// Material
+
+// ======================================
+// LIVING GLASS SHADER
+// ======================================
+
+const material = new THREE.ShaderMaterial({
+
+    uniforms: {
+
+        uTime: {
+            value: 0
+        }
+
+    },
+
+
+    // Vertex Shader
+    vertexShader: `
+
+        varying vec3 vPosition;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        void main() {
+
+            vPosition = position;
+
+            vNormal = normalize(
+                normalMatrix * normal
+            );
+
+            vec4 mvPosition =
+                modelViewMatrix *
+                vec4(position, 1.0);
+
+            vViewPosition = -mvPosition.xyz;
+
+            gl_Position =
+                projectionMatrix * mvPosition;
+
+        }
+
+    `,
+
+
+    // Fragment Shader
+    fragmentShader: `
+
+        uniform float uTime;
+
+        varying vec3 vPosition;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+
+        // =================================
+        // 1. NOISE FUNCTION
+        // =================================
+
+        float hash(vec3 p) {
+
+            p = fract(
+                p * 0.3183099 +
+                vec3(0.1, 0.2, 0.3)
+            );
+
+            p *= 17.0;
+
+            return fract(
+                p.x * p.y * p.z *
+                (p.x + p.y + p.z)
+            );
+
+        }
+
+
+        float noise(vec3 p) {
+
+            vec3 i = floor(p);
+
+            vec3 f = fract(p);
+
+            f = f * f * (3.0 - 2.0 * f);
+
+            return mix(
+
+                mix(
+                    mix(
+                        hash(i),
+                        hash(i + vec3(1,0,0)),
+                        f.x
+                    ),
+
+                    mix(
+                        hash(i + vec3(0,1,0)),
+                        hash(i + vec3(1,1,0)),
+                        f.x
+                    ),
+
+                    f.y
+                ),
+
+                mix(
+
+                    mix(
+                        hash(i + vec3(0,0,1)),
+                        hash(i + vec3(1,0,1)),
+                        f.x
+                    ),
+
+                    mix(
+                        hash(i + vec3(0,1,1)),
+                        hash(i + vec3(1,1,1)),
+                        f.x
+                    ),
+
+                    f.y
+                ),
+
+                f.z
+
+            );
+
+        }
+
+
+        // =================================
+        // 2. MAIN SHADER
+        // =================================
+
+        void main() {
+
+            vec3 p = normalize(vPosition);
+
+            vec3 N = normalize(vNormal);
+
+            vec3 V = normalize(vViewPosition);
+
+            float time = uTime * 0.18;
+
+
+            // =================================
+            // 3. LIQUID COLOR MOVEMENT
+            // =================================
+
+            float n1 = noise(
+                p * 3.5 +
+                vec3(time, -time, time * 0.4)
+            );
+
+            float n2 = noise(
+                p * 6.0 +
+                vec3(-time, time * 0.5, time)
+            );
+
+
+            float flow = sin(
+
+                p.x * 3.0 +
+                p.y * 2.0 -
+                p.z * 2.0 +
+                n1 * 2.0 +
+                time * 2.0
+
+            );
+
+
+            // =================================
+            // 4. COLOR PALETTE
+            // =================================
+
+            vec3 deepBlue = vec3(
+                0.005,
+                0.015,
+                0.09
+            );
+
+            vec3 blue = vec3(
+                0.015,
+                0.12,
+                0.85
+            );
+
+            vec3 electricBlue = vec3(
+                0.04,
+                0.35,
+                1.0
+            );
+
+            vec3 purple = vec3(
+                0.35,
+                0.04,
+                0.8
+            );
+
+            vec3 violet = vec3(
+                0.65,
+                0.12,
+                0.8
+            );
+
+            vec3 orange = vec3(
+                1.0,
+                0.3,
+                0.035
+            );
+
+
+            // =================================
+            // 5. COLOR BLENDING
+            // =================================
+
+            float blueMask = smoothstep(
+                -0.5,
+                0.7,
+                p.x + n1 * 0.5
+            );
+
+            float purpleMask = smoothstep(
+                -0.3,
+                0.8,
+                p.y + n2 * 0.4
+            );
+
+
+            vec3 color = mix(
+                deepBlue,
+                blue,
+                blueMask
+            );
+
+            color = mix(
+                color,
+                purple,
+                purpleMask * 0.8
+            );
+
+            color = mix(
+                color,
+                violet,
+                smoothstep(-0.4, 0.8, flow) * 0.3
+            );
+
+
+            // =================================
+            // 6. ORANGE LIQUID GLOW
+            // =================================
+
+            float warmArea = smoothstep(
+                0.15,
+                0.95,
+                -p.y + n2 * 0.2
+            );
+
+            color = mix(
+                color,
+                orange,
+                warmArea * 0.85
+            );
+
+
+            // =================================
+            // 7. GLASS FRESNEL
+            // =================================
+
+            float ndv = max(
+                dot(N, V),
+                0.0
+            );
+
+            float fresnel = pow(
+                1.0 - ndv,
+                2.5
+            );
+
+
+            vec3 rimColor = mix(
+
+                vec3(0.12, 0.3, 1.0),
+
+                vec3(1.0, 0.3, 0.05),
+
+                smoothstep(-0.5, 0.7, p.y)
+
+            );
+
+
+            color += rimColor * fresnel * 1.4;
+
+
+            // =================================
+            // 8. GLASS REFLECTION
+            // =================================
+
+            vec3 lightDirection = normalize(
+                vec3(-0.6, 0.7, 0.8)
+            );
+
+            vec3 reflected = reflect(
+                -lightDirection,
+                N
+            );
+
+            float reflection = pow(
+                max(dot(reflected, V), 0.0),
+                35.0
+            );
+
+
+            color += vec3(
+                0.65,
+                0.8,
+                1.0
+            ) * reflection;
+
+
+            // Broad reflection
+            float softReflection = pow(
+                max(dot(reflected, V), 0.0),
+                8.0
+            );
+
+            color += vec3(
+                0.12,
+                0.25,
+                0.8
+            ) * softReflection * 0.3;
+
+
+            // =================================
+            // 9. INTERNAL GLOW
+            // =================================
+
+            float innerGlow = noise(
+                p * 9.0 +
+                vec3(time * 0.8)
+            );
+
+            color += vec3(
+                0.1,
+                0.2,
+                0.8
+            ) * innerGlow * 0.12;
+
+
+            // =================================
+            // 10. FINAL COLOR
+            // =================================
+
+            color = pow(
+                max(color, vec3(0.0)),
+                vec3(0.88)
+            );
+
+
+            gl_FragColor = vec4(
+                color,
+                1.0
+            );
+
+            #include <tonemapping_fragment>
+
+            #include <colorspace_fragment>
+
+        }
+
+    `
+
+});
+
+
+// Sphere
+
+const sphere = new THREE.Mesh(
+    geometry,
+    material
+);
+
+scene.add(sphere);
+    // ======================================
+// REAL GLASS SHELL
+// ======================================
+
+const glassGeometry = new THREE.SphereGeometry(
+    1.015,
+    128,
+    128
+);
+
+const glassMaterial = new THREE.MeshPhysicalMaterial({
+
+    color: 0xffffff,
+
+    metalness: 0,
+
+    roughness: 0.055,
+
+    transmission: 1,
+
+    thickness: 0.8,
+
+    ior: 1.45,
+
+    clearcoat: 1,
+
+    clearcoatRoughness: 0.025,
+
+    envMapIntensity: 1.5,
+
+    attenuationColor: new THREE.Color(0x657aff),
+
+    attenuationDistance: 2.5
+
+});
+
+const glassShell = new THREE.Mesh(
+    glassGeometry,
+    glassMaterial
+);
+
+scene.add(glassShell);
+
+
+// Lights
+
+const ambient = new THREE.AmbientLight(
+    0x6677ff,
+    1.5
+);
+
+scene.add(ambient);
+
+
+const blueLight = new THREE.PointLight(
+    0x1765ff,
+    35
+);
+
+blueLight.position.set(-2, 2, 3);
+
+scene.add(blueLight);
+
+
+const orangeLight = new THREE.PointLight(
+    0xff7025,
+    30
+);
+
+orangeLight.position.set(1, -2, 2);
+
+scene.add(orangeLight);
+
+
+const purpleLight = new THREE.PointLight(
+    0x8b35ff,
+    25
+);
+
+purpleLight.position.set(2, 1, -2);
+
+scene.add(purpleLight);
+
+
+// Animation
+
+const clock = new THREE.Clock();
+
+    // ======================================
+// INNER CRYSTAL LAYERS
+// ======================================
+
+function createInnerLayer(size, color, opacity) {
+
+    const geometry = new THREE.SphereGeometry(
+        size,
+        96,
+        96
+    );
+
+    const material = new THREE.MeshPhysicalMaterial({
+
+        color: color,
+
+        transparent: true,
+
+        opacity: opacity,
+
+        metalness: 0.15,
+
+        roughness: 0.12,
+
+        transmission: 0.45,
+
+        thickness: 0.5,
+
+        ior: 1.35,
+
+        clearcoat: 1,
+
+        envMapIntensity: 1.2,
+
+        depthWrite: false
+
+    });
+
+    const mesh = new THREE.Mesh(
+        geometry,
+        material
+    );
+
+    scene.add(mesh);
+
+    return mesh;
+
+}
+
+
+// Blue crystal layer
+const blueLayer = createInnerLayer(
+    0.82,
+    0x174cff,
+    0.55
+);
+
+
+// Violet crystal layer
+const violetLayer = createInnerLayer(
+    0.68,
+    0x742cff,
+    0.38
+);
+
+
+// Dark inner core
+const darkLayer = createInnerLayer(
+    0.48,
+    0x090d38,
+    0.65
+);
+
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    const time = clock.getElapsedTime();
+    material.uniforms.uTime.value = time;
+    sphere.rotation.y = time * 0.15;
+
+    sphere.rotation.x =
+        Math.sin(time * 0.3) * 0.08;
+
+    blueLight.position.x =
+        -2 + Math.sin(time * 0.4) * 0.4;
+
+    orangeLight.position.x =
+        1 + Math.cos(time * 0.3) * 0.3;
+    // ======================================
+// CRYSTAL ANIMATION
+// ======================================
+
+blueLayer.rotation.y = time * 0.10;
+
+blueLayer.rotation.x =
+    Math.sin(time * 0.3) * 0.08;
+
+
+violetLayer.rotation.y = -time * 0.16;
+
+violetLayer.rotation.z =
+    Math.sin(time * 0.2) * 0.12;
+
+
+darkLayer.rotation.y = time * 0.07;
+
+
+// Glass shell follows the main sphere
+glassShell.rotation.copy(sphere.rotation);
+
+    renderer.render(scene, camera);
+
+}
+    // ======================================
+// INNER CRYSTAL LAYERS
+// ======================================
+
+function createInnerLayer(size, color, opacity) {
+
+    const geometry = new THREE.SphereGeometry(
+        size,
+        96,
+        96
+    );
+
+    const material = new THREE.MeshPhysicalMaterial({
+
+        color: color,
+
+        transparent: true,
+
+        opacity: opacity,
+
+        metalness: 0.15,
+
+        roughness: 0.12,
+
+
+animate();
+
+</script>
+
+
+</body>
+
+</html>
