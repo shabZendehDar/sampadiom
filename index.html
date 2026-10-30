@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+    
 
 <head>
 
@@ -7,6 +8,7 @@
 
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
+    
 
 <title>Living Periodic Table</title>
 
@@ -341,6 +343,11 @@ body {
 
 import * as THREE from
 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+    import { RoomEnvironment } from
+'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/environments/RoomEnvironment.js';
+
+import { PMREMGenerator } from
+'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/pmrem/PMREMGenerator.js';
 
 
 const canvas = document.querySelector("#orb");
@@ -349,6 +356,22 @@ const canvas = document.querySelector("#orb");
 // Scene
 
 const scene = new THREE.Scene();
+    // ======================================
+// ENVIRONMENT REFLECTION
+// ======================================
+
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+
+const environment = new RoomEnvironment();
+
+const environmentTexture =
+    pmremGenerator.fromScene(environment).texture;
+
+scene.environment = environmentTexture;
+
+environment.dispose();
+
+pmremGenerator.dispose();
 
 
 // Camera
@@ -773,6 +796,48 @@ const sphere = new THREE.Mesh(
 );
 
 scene.add(sphere);
+    // ======================================
+// REAL GLASS SHELL
+// ======================================
+
+const glassGeometry = new THREE.SphereGeometry(
+    1.015,
+    128,
+    128
+);
+
+const glassMaterial = new THREE.MeshPhysicalMaterial({
+
+    color: 0xffffff,
+
+    metalness: 0,
+
+    roughness: 0.055,
+
+    transmission: 1,
+
+    thickness: 0.8,
+
+    ior: 1.45,
+
+    clearcoat: 1,
+
+    clearcoatRoughness: 0.025,
+
+    envMapIntensity: 1.5,
+
+    attenuationColor: new THREE.Color(0x657aff),
+
+    attenuationDistance: 2.5
+
+});
+
+const glassShell = new THREE.Mesh(
+    glassGeometry,
+    glassMaterial
+);
+
+scene.add(glassShell);
 
 
 // Lights
@@ -836,10 +901,103 @@ function animate() {
 
     orangeLight.position.x =
         1 + Math.cos(time * 0.3) * 0.3;
+    // ======================================
+// CRYSTAL ANIMATION
+// ======================================
+
+blueLayer.rotation.y = time * 0.10;
+
+blueLayer.rotation.x =
+    Math.sin(time * 0.3) * 0.08;
+
+
+violetLayer.rotation.y = -time * 0.16;
+
+violetLayer.rotation.z =
+    Math.sin(time * 0.2) * 0.12;
+
+
+darkLayer.rotation.y = time * 0.07;
+
+
+// Glass shell follows the main sphere
+glassShell.rotation.copy(sphere.rotation);
 
     renderer.render(scene, camera);
 
 }
+    // ======================================
+// INNER CRYSTAL LAYERS
+// ======================================
+
+function createInnerLayer(size, color, opacity) {
+
+    const geometry = new THREE.SphereGeometry(
+        size,
+        96,
+        96
+    );
+
+    const material = new THREE.MeshPhysicalMaterial({
+
+        color: color,
+
+        transparent: true,
+
+        opacity: opacity,
+
+        metalness: 0.15,
+
+        roughness: 0.12,
+
+        transmission: 0.45,
+
+        thickness: 0.5,
+
+        ior: 1.35,
+
+        clearcoat: 1,
+
+        envMapIntensity: 1.2,
+
+        depthWrite: false
+
+    });
+
+    const mesh = new THREE.Mesh(
+        geometry,
+        material
+    );
+
+    scene.add(mesh);
+
+    return mesh;
+
+}
+
+
+// Blue crystal layer
+const blueLayer = createInnerLayer(
+    0.82,
+    0x174cff,
+    0.55
+);
+
+
+// Violet crystal layer
+const violetLayer = createInnerLayer(
+    0.68,
+    0x742cff,
+    0.38
+);
+
+
+// Dark inner core
+const darkLayer = createInnerLayer(
+    0.48,
+    0x090d38,
+    0.65
+);
 
 
 animate();
